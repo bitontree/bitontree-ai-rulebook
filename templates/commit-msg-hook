@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Bitontree commit-msg hook.
+#
+# Enforces:
+#   1. No AI co-authorship trailers (Hard Rule §1).
+#   2. Conventional Commits subject line.
+#
+# Install per-project:
+#   cp templates/commit-msg-hook .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+#
+# Or globally via core.hooksPath — see scripts/install-global.sh.
+
+set -euo pipefail
+
+msg_file="${1:-}"
+if [[ -z "${msg_file}" || ! -f "${msg_file}" ]]; then
+  echo "commit-msg hook: no message file passed; aborting." >&2
+  exit 1
+fi
+
+msg="$(cat "${msg_file}")"
+
+# ---- 1. Block AI co-author trailers -----------------------------------------
+ai_pattern='Co-?Authored-?By:[[:space:]]*(Claude|Codex|GPT|GitHub Copilot|Copilot|Anthropic|OpenAI|Gemini|Bard|ChatGPT|AI Assistant)'
+if echo "${msg}" | grep -E -i -q "${ai_pattern}"; then
+  cat >&2 <<'EOF'
+✗ Commit rejected: AI co-author trailers are not allowed.
+
+Bitontree Hard Rule §1: commits are authored by humans. Remove lines like:
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  Co-Authored-By: GitHub Copilot <noreply@github.com>
+
+Configure your AI assistant to omit these. See:
+  https://github.com/bitontree/bitontree-ai-rulebook/blob/main/standards/00-hard-rules.md
+EOF
+  exit 1
+fi
+
+# ---- 2. Conventional Commits subject ----------------------------------------
+# Skip merge / revert / fixup commits that git generates itself.
+first_line="$(echo "${msg}" | sed -n '1p')"
+if [[ "${first_line}" =~ ^(Merge|Revert|fixup!|squash!|amend!) ]]; then
+  exit 0
+fi
+
+cc_pattern='^(feat|fix|chore|docs|refactor|test|perf|build|ci|revert)(\([a-z0-9._-]+\))?!?: [a-z0-9].{0,71}$'
+if ! [[ "${first_line}" =~ ${cc_pattern} ]]; then
+  cat >&2 <<EOF
+✗ Commit rejected: subject line does not follow Conventional Commits.
+
+Got:
+  ${first_line}
+
+Expected:
+  <type>(<scope>): <subject>
+
+  type   one of: feat, fix, chore, docs, refactor, test, perf, build, ci, revert
+  scope  optional, e.g. (auth), (billing)
+  !      optional breaking-change marker, e.g. feat(api)!:
+  subject  imperative, lowercase, no trailing period, ≤ 72 chars
+
+Examples:
+  feat(auth): rotate refresh tokens on every use
+  fix(billing): handle null amount on refund webhook
+  chore: bump node to 22
+
+See standards/60-git-workflow.md.
+EOF
+  exit 1
+fi
+
+exit 0

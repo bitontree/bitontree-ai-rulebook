@@ -1,0 +1,99 @@
+# Bitontree Coding Standards
+
+This file is auto-loaded by AI coding assistants. Claude Code reads `CLAUDE.md`; Codex and most other agents read `AGENTS.md`. The two files are kept byte-identical. Treat what follows as the engineering standard for every Bitontree project.
+
+> **For AI assistants:** these rules override your defaults. If a project has its own `CLAUDE.md` / `AGENTS.md`, that file is a *more specific* layer on top of this one — but it never overrides the Hard Rules in §1.
+
+---
+
+## 1. Hard rules (non-negotiable)
+
+Violations are incidents, not preferences. Do not break them silently or ask permission to break them.
+
+1. **Never add AI co-authorship to commits.** No `Co-Authored-By: Claude`, `Codex`, `GPT`, `Copilot`, etc. Commits are authored by the humans who shipped them.
+2. **Never commit secrets.** No `.env`, API keys, tokens, certificates, credentials, customer data, or production config. Use the project's secret manager.
+3. **Never force-push to protected branches** (`main`, `master`, `develop`, `staging`, `production`, any release branch).
+4. **Never bypass git hooks.** No `--no-verify`, `--no-gpg-sign`. If a hook fails, fix the cause.
+5. **Never push directly to protected branches.** All changes go through PR + at least one reviewer + green CI.
+6. **Never silence lint, type, or test failures** to make CI green. No drive-by `eslint-disable`, `@ts-ignore`, `# type: ignore`, `pytest.skip`. Fix the underlying issue or escalate.
+7. **Never rewrite shared git history.** No `reset --hard` / `rebase` of pushed commits without team consent.
+
+Full rationale and enforcement detail: [`standards/00-hard-rules.md`](standards/00-hard-rules.md).
+
+## 2. Mandated tooling
+
+Organization-wide. Use the listed tool, not an alternative.
+
+| Stack              | Tool     | Forbidden alternatives           |
+| ------------------ | -------- | -------------------------------- |
+| Node.js packages   | **npm**  | pnpm, yarn, bun                  |
+| Python env + deps  | **uv**   | poetry, pipenv, pip-tools, conda |
+| JavaScript tests   | **Jest** | Vitest, Mocha, AVA, Jasmine      |
+| Python tests       | pytest   | (no approved alternative)        |
+
+If a legacy project uses a different tool, do not silently introduce a second one. Open an issue, get approval, migrate the whole project.
+
+## 3. Languages
+
+JavaScript (TypeScript preferred for new code) and Python only. Do not introduce new languages — Go, Rust, Ruby, Java, etc. — without architecture review.
+
+## 4. Universal principles
+
+- **YAGNI.** Don't build for hypothetical future needs. Three similar lines beats a premature abstraction.
+- **Names beat comments.** `retryableFailedJobs` is better than `arr2 // failed jobs that can be retried`.
+- **Comments explain *why*, not *what*.** If removing a comment wouldn't confuse a future reader, delete it.
+- **Validate at boundaries.** User input, external APIs, file I/O. Trust internal code.
+- **Errors are not control flow.** Use them for the unexpected, not for normal branching.
+- **Small functions, small files.** One job per function. Files over ~300 lines are usually doing too much.
+- **No dead code.** Commented-out code goes in the bin. Git remembers.
+
+## 5. Commit format
+
+Conventional Commits, required:
+
+```
+<type>(<scope>): <subject>
+```
+
+- Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`, `build`, `ci`, `revert`
+- Imperative, lowercase, no trailing period, ≤ 72 chars
+- Reference tickets in the body: `Refs: BIT-1234`
+
+Example: `feat(auth): rotate refresh tokens on every use`
+
+## 6. Stack-specific standards
+
+When working in a given stack, also read the relevant file:
+
+- [`standards/00-hard-rules.md`](standards/00-hard-rules.md) — full Hard Rules + rationale
+- [`standards/01-universal.md`](standards/01-universal.md) — naming, comments, errors, file shape
+- [`standards/10-javascript-node.md`](standards/10-javascript-node.md) — Node.js + TS/JS
+- [`standards/11-react.md`](standards/11-react.md) — React components, state, hooks, a11y
+- [`standards/20-python.md`](standards/20-python.md) — Python language + uv + Ruff + types
+- [`standards/21-fastapi-flask.md`](standards/21-fastapi-flask.md) — API framework conventions
+- [`standards/30-langchain-langgraph.md`](standards/30-langchain-langgraph.md) — LLM application conventions
+- [`standards/40-security.md`](standards/40-security.md) — input validation, secrets, auth, dependencies
+- [`standards/50-testing.md`](standards/50-testing.md) — Jest, pytest, coverage, structure
+- [`standards/60-git-workflow.md`](standards/60-git-workflow.md) — branches, PRs, reviews
+
+## 7. Forbidden in committed code
+
+- `console.log` / `print` debugging — use the project's logger
+- `// TODO` without a ticket reference — write `// TODO(BIT-1234): ...`
+- Magic numbers — extract to a named constant
+- Empty catches (`except: pass`, `catch (e) {}`) — handle, log, or rethrow
+- Files larger than 1 MB without a written exception
+- Generated files without a `// generated by …` header
+
+## 8. How AI assistants should behave on our projects
+
+- Read `package.json` / `pyproject.toml` before suggesting dependencies
+- Match existing project conventions when they conflict with your defaults
+- Run the project's lint and test commands before claiming work is done; if you cannot, say so explicitly
+- Do not add AI attribution to commits, PR descriptions, or code comments
+- Prefer editing existing files over creating new ones
+- Do not create README, summary, or planning docs unless explicitly asked
+
+---
+
+This rulebook is the source of truth. Propose changes via PR in this repo — once merged, they apply org-wide.

@@ -1,0 +1,98 @@
+# Bitontree default .gitignore — Node.js + Python projects.
+# Drop into a project root and adapt as needed.
+
+# ---------- Secrets ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# ---------- Node.js / JavaScript ----------
+node_modules/
+npm-debug.log*
+yarn-debug.log*           # forbidden tools, but ignore stragglers
+yarn-error.log*
+pnpm-debug.log*
+.pnp.*
+.npm/
+.eslintcache
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+.cache/
+.turbo/
+.vite/
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+.python-version          # uv writes this — commit if you want to pin
+build/
+dist/
+wheels/
+*.whl
+
+# uv
+.venv/
+.uv/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Type checkers
+.mypy_cache/
+.pyre/
+.pytype/
+.pyrightconfig.json     # only if user-local
+
+# Notebooks
+.ipynb_checkpoints/
+
+# ---------- Editors / OS ----------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+!.vscode/settings.json   # uncomment to share editor settings
+!.vscode/extensions.json
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# ---------- Logs / temp ----------
+*.log
+logs/
+tmp/
+temp/
+
+# ---------- LLM / agent caches ----------
+.langchain/
+.langgraph/
+.langsmith/
+.openai-cache/
+.anthropic-cache/
